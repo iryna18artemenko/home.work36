@@ -1,34 +1,38 @@
-function getPostById (id) {
 
-  const result = {
-    id, 
-    post: [],
-    comments: []
-  };
-
-  const posts = document.querySelector(".post");
+async function getPostById (id) {
+ 
+  const responcePost = await fetch ("https://jsonplaceholder.typicode.com/posts");
+  const responseResultPost = await responcePost.json();
   
+  const responseComment = await fetch ("https://jsonplaceholder.typicode.com/comments");
+  const responseResultComment = await responseComment.json(); 
+
   if (id >= 1 && id <= 100) {
 
-      const ul = document.createElement("ul");
-      ul.innerHTML = `
-              <li> id:  ${result.post.id} </li>
-              <li> userId:  ${result.post.userId}</li>
-              <li> title:  "${result.post.title} "</li>
-              <li> body:  "${result.post.body}" </li>
-          `;
-      posts.appendChild(ul);
-    
+      const postsRes= responseResultPost.filter(post => post.id === id);
+      
+      for (const  post of postsRes) {
+        const posts = document.querySelector(".post");
+        const ul = document.createElement("ul");
+        ul.innerHTML = `
+                <li> id:  ${post.id} </li>
+                <li> userId:  ${post.userId}</li>
+                <li> title:  "${post.title} "</li>
+                <li> body:  "${post.body}" </li>
+            `;
+        posts.appendChild(ul);
+      }
+      
       const button = document.createElement("button")
       button.type = 'button';
-      button.innerHTML = 'Comments';
-      button.className = 'btn-styled';
+      button.innerHTML = 'Коментарі';
       posts.appendChild(button);
 
       button.onclick = function () {
         const ul = document.querySelector(".comment");
-
-        for (const  comment of result.comments) {
+        const commentsRes = responseResultComment.filter(comment => comment.postId === id);
+        
+        for (const  comment of commentsRes) {
             const li = document.createElement("li");
             li.innerHTML=`
                 postId: ${comment.postId},
@@ -42,24 +46,15 @@ function getPostById (id) {
       }
   } 
 
-  return new Promise((resolve)=> {
-     fetch ("https:jsonplaceholder.typicode.com/posts")
-      .then(data => data.json())
-      .then (posts => {
-        result.post= posts.filter(post => post.id === id)
-        
-        fetch ("https:jsonplaceholder.typicode.com/comments")  
-        .then(data => data.json())
-        .then (comments => {
-          result.comments = comments.filter(comment => comment.postId === id)
-          resolve(result);
-        })
-      })
-  });
 };
 
+getPostById(18)
 
+const formElement = document.getElementById('form');
 
-getPostById(1).then(data=> console.log(data))
-
-// document.querySelector(".input").addEventListener("keyup", getPostById)
+formElement.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const formData = new FormData(formElement);
+  const postId = formData.get('value');
+  getPostById(postId)
+});
