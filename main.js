@@ -1,39 +1,40 @@
+const formElement = document.getElementById('form');
 
-async function getPostById (id) {
- 
-  const responcePost = await fetch ("https://jsonplaceholder.typicode.com/posts");
-  const responseResultPost = await responcePost.json();
+formElement.addEventListener('submit', async function (e)  {
+  e.preventDefault();
+  const formData = new FormData(formElement);
+  const postId = formData.get('value');
   
-  const responseComment = await fetch ("https://jsonplaceholder.typicode.com/comments");
-  const responseResultComment = await responseComment.json(); 
-
-  if (id >= 1 && id <= 100) {
-
-      const postsRes= responseResultPost.filter(post => post.id === id);
-      
-      for (const  post of postsRes) {
-        const posts = document.querySelector(".post");
-        const ul = document.createElement("ul");
+  if (postId >= 1 && postId <= 100) {  
+    
+    const responcePost = await fetch (`https://jsonplaceholder.typicode.com/posts/${postId}`);
+    const resultPost = await responcePost.json();
+     
+    const posts = document.querySelector(".post");  
+    const ul = document.createElement("ul");
         ul.innerHTML = `
-                <li> id:  ${post.id} </li>
-                <li> userId:  ${post.userId}</li>
-                <li> title:  "${post.title} "</li>
-                <li> body:  "${post.body}" </li>
+                <li> id:  ${resultPost.id} </li>
+                <li> userId:  ${resultPost.userId}</li>
+                <li> title:  "${resultPost.title} "</li>
+                <li> body:  "${resultPost.body}" </li>
             `;
         posts.appendChild(ul);
-      }
-      
+
       const button = document.createElement("button")
       button.type = 'button';
       button.innerHTML = 'Коментарі';
       posts.appendChild(button);
 
-      button.onclick = function () {
-        const ul = document.querySelector(".comment");
-        const commentsRes = responseResultComment.filter(comment => comment.postId === id);
+      button.onclick = async function () {
         
-        for (const  comment of commentsRes) {
-            const li = document.createElement("li");
+        const responseComment = await fetch (`https://jsonplaceholder.typicode.com/posts/${postId}/comments`);
+        const resultComment = await responseComment.json();
+
+        const ul = document.querySelector(".comment");
+        
+        for (const  comment of resultComment) {
+           
+          const li = document.createElement("li");
             li.innerHTML=`
                 postId: ${comment.postId},
                 id:  ${comment.id},
@@ -41,20 +42,10 @@ async function getPostById (id) {
                 email:  "${comment.email}",
                 body: "${comment.body}"
             `;
-            ul.appendChild(li);
+           
+          ul.appendChild(li);
         }
+        
       }
-  } 
-
-};
-
-getPostById(18)
-
-const formElement = document.getElementById('form');
-
-formElement.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const formData = new FormData(formElement);
-  const postId = formData.get('value');
-  getPostById(postId)
+    }
 });
